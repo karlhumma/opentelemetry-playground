@@ -1,8 +1,8 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
-import * as db from "../db";
+import * as db from "./db";
 import { getSessionCookieOptions } from "./cookies";
-import { sdk } from "./sdk";
+import { auth } from "./auth";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -20,8 +20,8 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
+      const tokenResponse = await auth.exchangeCodeForToken(code, state);
+      const userInfo = await auth.getUserInfo(tokenResponse.accessToken);
 
       if (!userInfo.openId) {
         res.status(400).json({ error: "openId missing from user info" });
@@ -36,7 +36,7 @@ export function registerOAuthRoutes(app: Express) {
         lastSignedIn: new Date(),
       });
 
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
+      const sessionToken = await auth.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
         expiresInMs: ONE_YEAR_MS,
       });

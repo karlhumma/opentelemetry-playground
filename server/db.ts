@@ -1,11 +1,10 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import { type InsertUser, users } from "../drizzle/schema";
+import { ENV } from "./env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -52,6 +51,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
+
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
@@ -83,10 +83,6 @@ export async function getUserByOpenId(openId: string) {
     console.warn("[Database] Cannot get user: database not available");
     return undefined;
   }
-
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
-
-// TODO: add feature queries here as your schema grows.

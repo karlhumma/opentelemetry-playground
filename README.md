@@ -1,26 +1,73 @@
-# OpenTelemetry Config Playground
+# OpenTelemetry Playground (Refactored)
 
-A web-based playground for testing and visualizing OpenTelemetry Collector configurations. Paste your YAML config, see the pipeline visualization, and get real-time validation with error highlighting.
-
-![OTel Config Playground_image](docs/otel-config-playground-v2.png)
-
-![OTel Config Playground](https://img.shields.io/badge/OTel-Config%20Playground-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+A simplified full-stack TypeScript application designed to demonstrate OpenTelemetry instrumentation, utilizing React, Node.js, Drizzle ORM, and Jaeger.
 
 ## Features
 
-- **Monaco Editor** - Full-featured YAML editor with syntax highlighting
-- **Pipeline Visualization** - Interactive diagram showing data flow from receivers through processors to exporters
-- **Real-time Validation** - Instant feedback as you type with error highlighting
-- **Binary Validation** - Uses the actual `otelcol` binary for production-grade validation (when available)
-- **Error Navigation** - Click on errors to jump to the relevant line in the editor
-- **Import/Export** - Load and save your configurations
-- **Dark Theme** - Terminal/CLI aesthetic designed for DevOps workflows
+-   **Frontend:** React + Vite (Flattened architecture).
+-   **Backend:** Node.js + Express + tRPC (Flattened architecture).
+-   **Database:** MySQL (via Drizzle ORM).
+-   **Telemetry:** OpenTelemetry SDK + Jaeger Exporter.
+-   **Infrastructure:** Docker Compose.
 
-## Validation Modes
+## Project Structure
 
-The playground supports two validation modes:
+```text
+.
+├── client/         # React Frontend
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── pages/
+├── server/         # Node.js Backend
+│   ├── main.ts     # Entry Point
+│   ├── auth.ts     # Authentication Service
+│   ├── db.ts       # Database Connection
+│   └── routers/    # tRPC Routers
+├── shared/         # Shared Types/Constants
+└── docker-compose.yml
 
+
+Getting Started
+
+Prerequisites
+
+Docker & Docker Compose
+
+Node.js 20+ & pnpm
+
+Quick Start (Docker)
+
+Spin up the entire stack (App, Database, Jaeger) with one command:
+
+docker-compose up --build
+
+
+App: http://localhost:3000
+
+Jaeger UI: http://localhost:16686
+
+Local Development
+
+Install Dependencies:
+
+pnpm install
+
+
+Start Database & Jaeger (Background):
+
+docker-compose up -d db jaeger
+
+
+Run Development Server:
+
+pnpm dev
+
+
+Environment Variables
+
+Configuration is handled in server/env.ts and loaded via .env files.
+See .env.example (if available) or `docker
 | Mode | Description | Accuracy |
 |------|-------------|----------|
 | **Binary** | Uses the `otelcol` binary for validation | Full component validation |

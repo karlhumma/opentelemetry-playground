@@ -1,0 +1,49 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=mysql://root:root@db:3306/playground
+      # Placeholder for Auth - Replace with real URL if needed
+      - OAUTH_SERVER_URL=https://placeholder-auth.example.com
+      # OpenTelemetry
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - OTEL_SERVICE_NAME=opentelemetry-playground
+    depends_on:
+      - db
+      - jaeger
+    networks:
+      - playground-net
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: playground
+    ports:
+      - "3306:3306"
+    networks:
+      - playground-net
+    volumes:
+      - db_data:/var/lib/mysql
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # UI
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    networks:
+      - playground-net
+
+networks:
+  playground-net:
+    driver: bridge
+
+volumes:
+  db_data:
