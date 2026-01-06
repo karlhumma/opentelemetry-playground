@@ -104,3 +104,6 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Build context archive
+build-context.tar
