@@ -12,6 +12,10 @@ services:
       # OpenTelemetry
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - OTEL_SERVICE_NAME=opentelemetry-playground
+      - JWT_SECRET=super-secret-dev-key-change-me
+      - BUILT_IN_FORGE_API_KEY=sk-placeholder-key
+    command: >
+      sh -c "if [ \"$NODE_ENV\" = \"development\" ]; then pnpm install; else pnpm install --prod; fi && node dist/server/main.mjs"
     depends_on:
       - db
       - jaeger

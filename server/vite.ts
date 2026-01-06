@@ -7,8 +7,20 @@ export async function setupVite(app: Express, server: Server) {
   // Dynamically import vite only in development mode
   const { createServer: createViteServer } = await import("vite");
   const { nanoid } = await import("nanoid");
-  // @ts-ignore - vite.config.ts is outside server dir
-  const viteConfig = (await import("../vite.config")).default;
+  // @ts-ignore - vite.config.ts is outside server dir, resolve relative to CWD
+  const viteConfigPath = path.resolve(process.cwd(), "vite.config.ts");
+
+  // Robust config loading
+  let viteConfig;
+  try {
+    viteConfig = (await import(viteConfigPath)).default;
+  } catch (e) {
+    // Fallback if direct import fails (e.g. windows/linux path diffs)
+    console.warn(
+      "[Vite] Could not load vite.config.ts via import, attempting default resolution"
+    );
+    viteConfig = {};
+  }
 
   const serverOptions = {
     middlewareMode: true,
@@ -45,21 +57,28 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  // PROD MODE: Look for 'dist/public' or 'public' relative to CWD (/app)
+  // PROD MODE: Robustly search for the build output.
+  // In Docker, CWD is /app.
   const possiblePaths = [
-    path.resolve(process.cwd(), "dist", "public"), // Standard build output
-    path.resolve(process.cwd(), "public"),         // Fallback
+    path.resolve(process.cwd(), "dist", "public"), // Standard monorepo pattern
+    path.resolve(process.cwd(), "dist"), // Standard Vite pattern
+    path.resolve(process.cwd(), "dist", "client"), // Alternative pattern
+    path.resolve(process.cwd(), "public"), // Fallback
   ];
 
-  const distPath = possiblePaths.find(p => fs.existsSync(p));
+  const distPath = possiblePaths.find((p) => fs.existsSync(p));
 
   if (!distPath) {
     console.error(
-      `Could not find the build directory. Searched: ${possiblePaths.join(", ")}`
+      `Could not find the build directory. Searched: ${possiblePaths.join(
+        ", "
+      )}`
     );
+    // Don't crash, let it 404 naturally so we can see logs
     return;
   }
 
+  console.log(`[Static] Serving UI from: ${distPath}`);
   app.use(express.static(distPath));
 
   app.use("*", (_req, res) => {

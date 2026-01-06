@@ -45,3 +45,6 @@ k8s/
 # Documentation
 docs/
 ideas.md
+
+# Ensure patches directory is included
+!patches
